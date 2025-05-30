@@ -1,16 +1,19 @@
-# downloader.py
 from pytube import YouTube
+import os
+import re
 
-def download_video(url):
-    try:
-        yt = YouTube(url)
-        stream = yt.streams.get_highest_resolution()
-        print(f"Downloading: {yt.title}")
-        stream.download()
-        print("Download completed!")
-    except Exception as e:
-        print(f"Error: {e}")
+def sanitize_filename(name):
+    # Remove invalid filename chars
+    return re.sub(r'[\\/*?:"<>|]', "", name)
 
-if __name__ == "__main__":
-    video_url = input("Enter YouTube video URL: ")
-    download_video(video_url)
+def download_youtube_video(url):
+    yt = YouTube(url)
+    stream = yt.streams.filter(progressive=True, file_extension='mp4').order_by('resolution').desc().first()
+    if not stream:
+        raise Exception("No suitable video streams found")
+
+    title = sanitize_filename(yt.title)
+    filename = "temp_video.mp4"
+    stream.download(filename=filename)
+
+    return filename, title
