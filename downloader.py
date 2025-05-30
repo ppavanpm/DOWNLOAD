@@ -1,21 +1,20 @@
 import yt_dlp
 import os
-import re
 
-def sanitize_filename(name):
-    return re.sub(r'[\\/*?:"<>|]', "", name)
+def download_video(url):
+    # Make sure 'downloads' folder exists
+    if not os.path.exists('downloads'):
+        os.makedirs('downloads')
 
-def download_youtube_video(url):
     ydl_opts = {
-        'format': 'mp4',
-        'outtmpl': 'temp_video.%(ext)s',
-        'quiet': True,
-        'no_warnings': True,
+        'cookiefile': 'cookies.txt',  # Use the cookies you exported from your browser
+        'format': 'best',
+        'outtmpl': 'downloads/%(title)s.%(ext)s',
     }
-    
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        info_dict = ydl.extract_info(url, download=True)
-        title = sanitize_filename(info_dict.get('title', 'video'))
-        ext = info_dict.get('ext', 'mp4')
-        filename = f"temp_video.{ext}"
-    return filename, title
+
+    try:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            ydl.download([url])
+        return "Download completed successfully."
+    except Exception as e:
+        return f"Error: {str(e)}"
