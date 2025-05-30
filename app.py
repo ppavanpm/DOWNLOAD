@@ -1,23 +1,43 @@
-from flask import Flask, render_template, request, send_file, redirect, flash
-from downloader import download_video
+from flask import Flask, render_template, request, jsonify, send_file
+from downloader import download_video, get_progress
+import threading
 import os
+import uuid
 
 app = Flask(__name__)
-app.secret_key = 'supersecret'
+app.config['SECRET_KEY'] = 'supersecret'
+progress_dict = {}
 
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/')
 def index():
-    if request.method == 'POST':
-        url = request.form['url']
-        quality = request.form.get('quality', 'best')
-        try:
-            filepath = download_video(url, quality)
-            return send_file(filepath, as_attachment=True)
-        except Exception as e:
-            flash(f"Error: {str(e)}")
-            return redirect('/')
     return render_template('index.html')
 
+@app.route('/download', methods=['POST'])
+def download():
+    url = request.form['url']
+    quality = request.form['quality']
+    uid = str(uuid.uuid4())
+    progress_dict[uid] = {'status': 'Downloading...', 'progress': 0, 'filepath': None}
+
+    def run_download():
+        try:
+            filepath = download_video(url, quality, uid, progress_dict)
+            progress_dict[uid]['status'] = 'Done'
+            progress_dict[uid]['filepath'] = filepath
+        except Exception as e:
+            progress_dict[uid]['status'] = f'Error: {str(e)}'
+
+    threading.Thread(target=run_download).start()
+    return jsonify({'id': uid})
+
+@app.route('/progress/<id>')
+def progress(id):
+    return jsonify(progress_dict.get(id, {'status': 'Unknown'}))
+
+@app.route('/download_file/<id>')
+def download_file(id):
+    file = progress_dict[id]['filepath']
+    return send_file(file, as_attachment=True)
+
 if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 5000))
-    app.run(debug=True, host='0.0.0.0', port=port)
+    app.run(host='0.0.0.0', port=10000)
