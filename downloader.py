@@ -6,9 +6,10 @@ def download_video(url, quality, uid, progress_dict):
 
     def progress_hook(d):
         if d['status'] == 'downloading':
-            percent = d.get('_percent_str', '').strip()
-            progress_dict[uid]['progress'] = percent
-            progress_dict[uid]['status'] = f"Downloading: {percent}"
+            raw_percent = d.get('_percent_str', '').strip()
+            numeric_percent = raw_percent.replace('%', '').strip()
+            progress_dict[uid]['progress'] = numeric_percent
+            progress_dict[uid]['status'] = f"Downloading: {raw_percent}"
         elif d['status'] == 'finished':
             progress_dict[uid]['status'] = "Processing..."
 
