@@ -1,21 +1,30 @@
 import yt_dlp
+import uuid
 import os
 
-COOKIE_FILE = "cookies.txt"  # Must be in the root folder
+def download_video(url, quality="best"):
+    temp_dir = "downloads"
+    os.makedirs(temp_dir, exist_ok=True)
 
-def download_video(url):
+    filename = f"{uuid.uuid4()}.%(ext)s"
+    output_path = os.path.join(temp_dir, filename)
+
+    if quality == "audio":
+        format_selector = "bestaudio"
+    elif quality == "worst":
+        format_selector = "worst"
+    else:
+        format_selector = "best"
+
     ydl_opts = {
-        'format': 'best',
-        'outtmpl': 'downloads/%(title)s.%(ext)s',
-        'cookiefile': COOKIE_FILE,
+        'format': format_selector,
+        'outtmpl': output_path,
         'quiet': True,
-        'no_warnings': True,
+        'noplaylist': True,
+        'cookiefile': 'cookies.txt'
     }
 
-    if not os.path.exists('downloads'):
-        os.makedirs('downloads')
-
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        info_dict = ydl.extract_info(url, download=True)
-        filepath = ydl.prepare_filename(info_dict)
-    return filepath
+        info = ydl.extract_info(url, download=True)
+        final_path = ydl.prepare_filename(info)
+        return final_path
