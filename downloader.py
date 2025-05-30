@@ -1,20 +1,21 @@
 import yt_dlp
 import os
 
+COOKIE_FILE = "cookies.txt"  # Must be in the root folder
+
 def download_video(url):
-    # Make sure 'downloads' folder exists
+    ydl_opts = {
+        'format': 'best',
+        'outtmpl': 'downloads/%(title)s.%(ext)s',
+        'cookiefile': COOKIE_FILE,
+        'quiet': True,
+        'no_warnings': True,
+    }
+
     if not os.path.exists('downloads'):
         os.makedirs('downloads')
 
-    ydl_opts = {
-        'cookiefile': 'cookies.txt',  # Use the cookies you exported from your browser
-        'format': 'best',
-        'outtmpl': 'downloads/%(title)s.%(ext)s',
-    }
-
-    try:
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            ydl.download([url])
-        return "Download completed successfully."
-    except Exception as e:
-        return f"Error: {str(e)}"
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        info_dict = ydl.extract_info(url, download=True)
+        filepath = ydl.prepare_filename(info_dict)
+    return filepath
