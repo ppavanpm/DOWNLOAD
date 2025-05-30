@@ -1,30 +1,37 @@
 import yt_dlp
-import uuid
 import os
 
-def download_video(url, quality="best"):
-    temp_dir = "downloads"
-    os.makedirs(temp_dir, exist_ok=True)
+def download_video(url, quality, uid, progress_dict):
+    outtmpl = f"downloads/{uid}.%(ext)s"
 
-    filename = f"{uuid.uuid4()}.%(ext)s"
-    output_path = os.path.join(temp_dir, filename)
-
-    if quality == "audio":
-        format_selector = "bestaudio"
-    elif quality == "worst":
-        format_selector = "worst"
-    else:
-        format_selector = "best"
+    def progress_hook(d):
+        if d['status'] == 'downloading':
+            percent = d.get('_percent_str', '').strip()
+            progress_dict[uid]['progress'] = percent
+            progress_dict[uid]['status'] = f"Downloading: {percent}"
+        elif d['status'] == 'finished':
+            progress_dict[uid]['status'] = "Processing..."
 
     ydl_opts = {
-        'format': format_selector,
-        'outtmpl': output_path,
-        'quiet': True,
-        'noplaylist': True,
-        'cookiefile': 'cookies.txt'
+        'outtmpl': outtmpl,
+        'progress_hooks': [progress_hook],
     }
+
+    if quality == 'audio':
+        ydl_opts.update({
+            'format': 'bestaudio',
+            'postprocessors': [{
+                'key': 'FFmpegExtractAudio',
+                'preferredcodec': 'mp3',
+                'preferredquality': '192',
+            }]
+        })
+    elif quality == 'low':
+        ydl_opts['format'] = 'worst'
+    else:
+        ydl_opts['format'] = 'best'
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(url, download=True)
-        final_path = ydl.prepare_filename(info)
-        return final_path
+        ext = info.get('ext', 'mp4')
+        return f"downloads/{uid}.{ext}"
