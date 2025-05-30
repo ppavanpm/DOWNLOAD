@@ -1,24 +1,22 @@
-from flask import Flask, render_template, request, send_file, flash, redirect, url_for
+from flask import Flask, render_template, request, send_file, redirect, flash
 from downloader import download_video
 import os
 
 app = Flask(__name__)
-app.secret_key = "your_secret_key"  # Needed for flashing messages
+app.secret_key = 'supersecret'
 
-@app.route("/", methods=["GET", "POST"])
+@app.route('/', methods=['GET', 'POST'])
 def index():
-    if request.method == "POST":
-        url = request.form.get("url")
-        if not url:
-            flash("Please enter a video URL")
-            return redirect(url_for("index"))
+    if request.method == 'POST':
+        url = request.form['url']
+        quality = request.form.get('quality', 'best')
         try:
-            filepath = download_video(url)
+            filepath = download_video(url, quality)
             return send_file(filepath, as_attachment=True)
         except Exception as e:
-            flash(str(e))
-            return redirect(url_for("index"))
-    return render_template("index.html")
+            flash(f"Error: {str(e)}")
+            return redirect('/')
+    return render_template('index.html')
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 10000)))
+if __name__ == '__main__':
+    app.run(debug=True)
