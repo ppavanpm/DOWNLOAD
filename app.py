@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, jsonify, send_file
-from downloader import download_video, get_progress
+from downloader import download_video  # Removed get_progress
 import threading
 import os
 import uuid
@@ -7,6 +7,10 @@ import uuid
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'supersecret'
 progress_dict = {}
+
+# Ensure downloads folder exists
+if not os.path.exists('downloads'):
+    os.makedirs('downloads')
 
 @app.route('/')
 def index():
@@ -17,7 +21,7 @@ def download():
     url = request.form['url']
     quality = request.form['quality']
     uid = str(uuid.uuid4())
-    progress_dict[uid] = {'status': 'Downloading...', 'progress': 0, 'filepath': None}
+    progress_dict[uid] = {'status': 'Downloading...', 'progress': '0%', 'filepath': None}
 
     def run_download():
         try:
@@ -32,12 +36,15 @@ def download():
 
 @app.route('/progress/<id>')
 def progress(id):
-    return jsonify(progress_dict.get(id, {'status': 'Unknown'}))
+    return jsonify(progress_dict.get(id, {'status': 'Unknown', 'progress': '0%'}))
 
 @app.route('/download_file/<id>')
 def download_file(id):
-    file = progress_dict[id]['filepath']
-    return send_file(file, as_attachment=True)
+    file = progress_dict.get(id, {}).get('filepath')
+    if file and os.path.exists(file):
+        return send_file(file, as_attachment=True)
+    else:
+        return "File not found or still downloading", 404
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=10000)
