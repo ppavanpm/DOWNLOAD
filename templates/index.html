@@ -1,16 +1,14 @@
-<!-- templates/index.html -->
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>YouTube Video Downloader</title>
+  <meta charset="UTF-8" />
+  <title>YouTube Video Downloader</title>
 </head>
 <body>
-    <h1>YouTube Video Downloader</h1>
-    <form method="POST">
-        <input type="text" name="url" placeholder="Paste YouTube URL here" required style="width:300px"/>
-        <button type="submit">Download</button>
-    </form>
+  <h1>Paste YouTube URL to Download</h1>
+  <form method="POST" action="/download">
+    <input type="text" name="url" style="width:400px" placeholder="YouTube video URL" required />
+    <button type="submit">Download</button>
+  </form>
 </body>
 </html>
