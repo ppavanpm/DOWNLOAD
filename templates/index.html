@@ -1,97 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Video Downloader</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #1e1e2f;
-      color: #f5f5f5;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      margin: 0;
-    }
-    .container {
-      background: #2e2e3e;
-      padding: 2rem;
-      border-radius: 10px;
-      box-shadow: 0 0 15px rgba(0,0,0,0.3);
-      width: 100%;
-      max-width: 400px;
-    }
-    h1 {
-      text-align: center;
-      margin-bottom: 1.5rem;
-      font-size: 1.5rem;
-    }
-    input[type="text"], select {
-      width: 100%;
-      padding: 0.75rem;
-      margin-bottom: 1rem;
-      border: none;
-      border-radius: 5px;
-    }
-    button {
-      width: 100%;
-      padding: 0.75rem;
-      background: #4caf50;
-      border: none;
-      color: white;
-      font-size: 1rem;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #45a049;
-    }
-    .message {
-      color: #ff4e4e;
-      text-align: center;
-      margin-bottom: 1rem;
-    }
-    .loading {
-      display: none;
-      text-align: center;
-      margin-top: 1rem;
-      font-size: 0.9rem;
-    }
-  </style>
+  <meta charset="UTF-8">
+  <title>Downloader</title>
+  <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
   <div class="container">
-    <h1>Download YouTube Video</h1>
-
-    {% with messages = get_flashed_messages() %}
-      {% if messages %}
-        <div class="message">
-          {% for message in messages %}
-            <p>{{ message }}</p>
-          {% endfor %}
-        </div>
-      {% endif %}
-    {% endwith %}
-
-    <form method="POST" onsubmit="showLoading()">
-      <input type="text" name="url" placeholder="Enter video URL" required />
+    <h1>📥 YouTube Downloader</h1>
+    <form id="downloadForm">
+      <input type="text" name="url" placeholder="Paste YouTube URL" required>
       <select name="quality">
         <option value="best">Best Quality</option>
-        <option value="worst">Low Quality</option>
-        <option value="audio">Audio Only</option>
+        <option value="low">Low Quality</option>
+        <option value="audio">Audio Only (MP3)</option>
       </select>
       <button type="submit">Download</button>
     </form>
-
-    <div class="loading" id="loading">Downloading... Please wait.</div>
+    <div id="status">Status: Idle</div>
+    <progress id="progressBar" value="0" max="100"></progress>
   </div>
-
-  <script>
-    function showLoading() {
-      document.getElementById('loading').style.display = 'block';
-    }
-  </script>
+  <script src="/static/script.js"></script>
 </body>
 </html>
